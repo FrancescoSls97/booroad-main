@@ -1,22 +1,26 @@
 import { useParams } from "react-router-dom";
-import travels from "../src/data/travels";
 import { useState } from "react";
 
 export default function SingleTravel() {
-    // Prendo l'id dalla URL
     const { id } = useParams();
 
-    // Trovo il viaggio corrispondente all'id
-    const travel = travels.find(t => String(t.id) === id);
+    const travelsData = JSON.parse(localStorage.getItem("travels") || "[]");
+    const initialTravel = travelsData.find(t => String(t.id) === id);
 
-    // Stato per gestire quale accordion è aperto
+    const [partecipanti, setPartecipanti] = useState(initialTravel ? initialTravel.partecipanti : []);
+
+    const [newName, setNewName] = useState("");
+    const [newSubname, setNewSubname] = useState("");
+    const [newEmail, setNewEmail] = useState("");
+    const [newCellulare, setNewCellulare] = useState("");
+    const [newCodiceFiscale, setNewCodiceFiscale] = useState("");
+
+    const [query, setQuery] = useState("");
     const [openIndex, setOpenIndex] = useState(null);
 
-    // Stato per la ricerca dei partecipanti
-    const [query, setQuery] = useState("");
+    if (!initialTravel) return <h2>Viaggio non trovato</h2>;
 
-    // Filtro i partecipanti in base alla ricerca
-    const filteredPartecipanti = travel.partecipanti.filter(
+    const filteredPartecipanti = partecipanti.filter(
         p =>
             p.name.toLowerCase().includes(query.toLowerCase()) ||
             p.subname.toLowerCase().includes(query.toLowerCase())
@@ -25,20 +29,101 @@ export default function SingleTravel() {
     return (
         <div className="container py-5 mt-5">
             <div className="card mx-auto" style={{ maxWidth: "1000px" }}>
-                {/* Immagine del viaggio */}
                 <img
-                    src={`https://picsum.photos/500/300?random=${travel.id}`}
+                    src={`https://picsum.photos/500/300?random=${initialTravel.id}`}
                     className="card-img-top"
-                    alt={travel.name}
+                    alt={initialTravel.name}
                     style={{ objectFit: "cover", height: "300px" }}
                 />
                 <div className="card-body">
-                    {/* Info viaggio */}
-                    <h3 className="card-title">{travel.name}</h3>
-                    <p className="card-text fw-bold">Data di Partenza: {travel.dataPartenza}</p>
-                    <p className="card-text fw-bold">Data di Ritorno: {travel.dataRitorno}</p>
+                    <h3 className="card-title">{initialTravel.name}</h3>
+                    <p className="card-text fw-bold">Data di Partenza: {initialTravel.dataPartenza}</p>
+                    <p className="card-text fw-bold">Data di Ritorno: {initialTravel.dataRitorno}</p>
                     <hr />
-                    {/* Input ricerca partecipante */}
+
+                    <form
+                        className="mb-4"
+                        onSubmit={e => {
+                            e.preventDefault();
+                            if (!newName || !newSubname) return;
+                            const newList = [
+                                ...partecipanti,
+                                {
+                                    name: newName,
+                                    subname: newSubname,
+                                    email: newEmail,
+                                    cellulare: newCellulare,
+                                    codicefiscale: newCodiceFiscale,
+                                },
+                            ];
+                            setPartecipanti(newList);
+                            const updatedTravels = travelsData.map(t =>
+                                String(t.id) === id ? { ...t, partecipanti: newList } : t
+                            );
+                            localStorage.setItem("travels", JSON.stringify(updatedTravels));
+                            setNewName("");
+                            setNewSubname("");
+                            setNewEmail("");
+                            setNewCellulare("");
+                            setNewCodiceFiscale("");
+                        }}
+                    >
+                        <div className="row g-2 mb-2">
+                            <div className="col">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Nome"
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="col">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Cognome"
+                                    value={newSubname}
+                                    onChange={e => setNewSubname(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="row g-2 mb-2">
+                            <div className="col">
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Email"
+                                    value={newEmail}
+                                    onChange={e => setNewEmail(e.target.value)}
+                                />
+                            </div>
+                            <div className="col">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Cellulare"
+                                    value={newCellulare}
+                                    onChange={e => setNewCellulare(e.target.value)}
+                                />
+                            </div>
+                            <div className="col">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Codice Fiscale"
+                                    value={newCodiceFiscale}
+                                    onChange={e => setNewCodiceFiscale(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <button type="submit" className="btn btn-primary btn-sm">
+                            Aggiungi partecipante
+                        </button>
+                    </form>
+
                     <input
                         type="text"
                         value={query}
@@ -47,7 +132,6 @@ export default function SingleTravel() {
                         className="form-control mb-3"
                     />
                     <h5>Partecipanti:</h5>
-                    {/* Accordion Bootstrap per i partecipanti */}
                     <div className="accordion" id="accordionPartecipanti">
                         {filteredPartecipanti.length === 0 && (
                             <div className="text-danger mb-3">Nessun partecipante trovato.</div>
@@ -58,7 +142,6 @@ export default function SingleTravel() {
                                     <button
                                         className={`accordion-button ${openIndex === idx ? "" : "collapsed"}`}
                                         type="button"
-                                        // Apro o chiudo la sezione del partecipante
                                         onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
                                     >
                                         {p.name} {p.subname}
@@ -71,7 +154,6 @@ export default function SingleTravel() {
                                     data-bs-parent="#accordionPartecipanti"
                                 >
                                     <div className="accordion-body">
-                                        {/* Info dettagliate del partecipante */}
                                         <p><strong>Email:</strong> {p.email}</p>
                                         <p><strong>Cellulare:</strong> {p.cellulare}</p>
                                         <p><strong>Codice Fiscale:</strong> {p.codicefiscale}</p>
