@@ -1,4 +1,6 @@
-Giorno 1
+Sviluppatori:
 
-https://trello.com/b/em3jkATf/la-mia-bacheca-di-trello
-
+Umberto Carbone: https://github.com/UmbertoCarbone
+Simone Poli: https://github.com/simone-poli
+Pasquale DI Maro: https://github.com/pasqualedimaro
+Francesco Sales: https://github.com/FrancescoSls97
